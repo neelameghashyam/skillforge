@@ -1,0 +1,4 @@
+-- ============================================================================
+-- Spaced repetition / revision feature has been removed from this project.
+-- This migration is intentionally left empty to preserve migration ordering.
+-- ============================================================================

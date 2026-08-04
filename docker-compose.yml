@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skillforge-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - supabase-db
+    restart: unless-stopped
+
+  # Local Postgres for offline development without the full Supabase CLI stack.
+  # For full local Supabase (Auth, Storage, Studio, Edge Functions), use
+  # `supabase start` instead (see README) — this service is a lightweight
+  # alternative for running migrations/tests against a bare Postgres instance.
+  supabase-db:
+    image: postgres:15-alpine
+    container_name: skillforge-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: skillforge
+    ports:
+      - "54322:5432"
+    volumes:
+      - skillforge_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  skillforge_db_data:
