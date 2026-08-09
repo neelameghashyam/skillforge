@@ -8,6 +8,10 @@ export function useResources(query?: string) {
   return useQuery({
     queryKey: ["resources", query],
     queryFn: () => api.get<{ data: Tables<"resources">[] }>(`/api/resources${query ? `?${query}` : ""}`).then((r) => r.data),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

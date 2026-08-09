@@ -1,15 +1,19 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
-import { Calendar, dateFnsLocalizer, type View, type EventProps, type SlotInfo } from "react-big-calendar";
+import { dateFnsLocalizer, type View, type SlotInfo } from "react-big-calendar";
 import { format, parse, startOfWeek as dfStartOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
-import "react-big-calendar/lib/css/react-big-calendar.css";
-import { useEvents, useCreateEvent, useUpdateEvent, useDeleteEvent } from "@/hooks/queries/use-events";
+import { useEvents } from "@/hooks/queries/use-events";
 import { Button } from "@/components/ui/button";
-import { EventDialog } from "@/components/calendar/event-dialog";
 import { Plus } from "lucide-react";
 import type { Tables } from "@/types/database";
+
+const Calendar = dynamic(() => import("react-big-calendar").then((mod) => mod.Calendar), { ssr: false });
+const EventDialog = dynamic(() => import("@/components/calendar/event-dialog").then((mod) => mod.EventDialog), { ssr: false });
+
+import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({

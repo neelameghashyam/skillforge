@@ -12,10 +12,12 @@ export interface GamificationSummary {
   recentXp: Tables<"xp_events">[];
 }
 
-export function useGamification() {
+export function useGamification(scope: "dashboard" | "full" = "full") {
   return useQuery({
-    queryKey: ["gamification"],
-    queryFn: () => api.get<{ data: GamificationSummary }>("/api/gamification/summary").then((r) => r.data),    staleTime: 60_000,
+    queryKey: ["gamification", scope],
+    queryFn: () => api.get<{ data: GamificationSummary }>(`/api/gamification/summary?scope=${scope}`).then((r) => r.data),
+    staleTime: 60_000,
     gcTime: 10 * 60_000,
-    refetchOnWindowFocus: false,  });
+    refetchOnWindowFocus: false,
+  });
 }

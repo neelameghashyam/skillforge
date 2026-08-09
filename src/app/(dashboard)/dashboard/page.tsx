@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const today = toDateInputValue(new Date());
   const { data: tasks, isLoading: tasksLoading } = useTasks({ from: today, to: today });
   const { data: projects } = useProjects();
-  const { data: gamification } = useGamification();
+  const { data: gamification } = useGamification("dashboard");
   const { data: skills } = useSkills();
   const updateTask = useUpdateTask();
 

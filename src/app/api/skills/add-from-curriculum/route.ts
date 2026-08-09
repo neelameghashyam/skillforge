@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getAuthUser } from "@/lib/supabase/get-auth-user";
+import { getAuthUser, getProfileUserId } from "@/lib/supabase/get-auth-user";
 import { z } from "zod";
 
 const bodySchema = z.object({
@@ -16,6 +16,8 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest) {
   const authUser = await getAuthUser(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const profileUserId = await getProfileUserId(req);
+  if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createClient();
 
   const body = await req.json().catch(() => null);
@@ -29,7 +31,7 @@ export async function POST(req: NextRequest) {
   const { data: existing } = await supabase
     .from("skills")
     .select("id")
-    .eq("user_id", authUser.id)
+    .eq("user_id", profileUserId)
     .eq("curriculum_id", curriculum_id)
     .maybeSingle();
 
@@ -40,7 +42,7 @@ export async function POST(req: NextRequest) {
   const { data: skill, error: skillError } = await supabase
     .from("skills")
     .insert({
-      user_id: authUser.id,
+      user_id: profileUserId,
       name,
       description: description ?? null,
       category,
@@ -74,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     topicRows = (topics ?? []).map((t) => ({
       skill_id: skill.id,
-      user_id: authUser.id,
+      user_id: profileUserId,
       curriculum_topic_id: t.id,
     }));
   }

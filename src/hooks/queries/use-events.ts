@@ -8,6 +8,10 @@ export function useEvents(query?: string) {
   return useQuery({
     queryKey: ["events", query],
     queryFn: () => api.get<{ data: Tables<"events">[] }>(`/api/events${query ? `?${query}` : ""}`).then((r) => r.data),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

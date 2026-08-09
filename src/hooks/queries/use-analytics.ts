@@ -13,5 +13,9 @@ export function useAnalytics(days = 30) {
   return useQuery({
     queryKey: ["analytics", days],
     queryFn: () => api.get<{ data: AnalyticsData }>(`/api/analytics?days=${days}`).then((r) => r.data),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }

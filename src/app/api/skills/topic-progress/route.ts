@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getAuthUser } from "@/lib/supabase/get-auth-user";
+import { getAuthUser, getProfileUserId } from "@/lib/supabase/get-auth-user";
 import { nowIsoString } from "@/lib/utils";
 import { z } from "zod";
 
@@ -13,6 +13,8 @@ const bodySchema = z.object({
 export async function POST(req: NextRequest) {
   const authUser = await getAuthUser(req);
   if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const profileUserId = await getProfileUserId(req);
+  if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const supabase = createClient();
 
   const body = await req.json().catch(() => null);
@@ -27,7 +29,7 @@ export async function POST(req: NextRequest) {
     .from("skills")
     .select("id, curriculum_id")
     .eq("id", skill_id)
-    .eq("user_id", authUser.id)
+    .eq("user_id", profileUserId)
     .maybeSingle();
 
   if (!skill) return NextResponse.json({ error: "Skill not found" }, { status: 404 });
@@ -37,7 +39,7 @@ export async function POST(req: NextRequest) {
     .upsert(
       {
         skill_id,
-        user_id: authUser.id,
+        user_id: profileUserId,
         curriculum_topic_id,
         is_complete,
         completed_at: is_complete ? nowIsoString() : null,

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export function useSkills(query?: string) {
   return useQuery({
     queryKey: ["skills", query],
-    queryFn: () => api.get<{ data: Tables<"skills">[] }>(`/api/skills${query ? `?${query}` : ""}`).then((r) => r.data),
+    queryFn: () => api.get<{ data: Tables<"skills">[] }>(`/api/skills${query ? `?${query}` : ""}${query ? "&compact=true" : "?compact=true"}`).then((r) => r.data),
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,

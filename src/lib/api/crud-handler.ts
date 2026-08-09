@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { getAuthUser } from "@/lib/supabase/get-auth-user";
+import { getAuthUser, getProfileUserId } from "@/lib/supabase/get-auth-user";
 import type { Database } from "@/types/database";
 
 type TableName = keyof Database["public"]["Tables"];
@@ -18,9 +18,11 @@ export function createCollectionHandlers<T extends z.ZodTypeAny>(opts: CrudOptio
   async function GET(req: NextRequest) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const profileUserId = await getProfileUserId(req);
+    if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
-    let query = supabase.from(opts.table).select("*").eq("user_id", authUser.id);
+    let query = supabase.from(opts.table).select("*").eq("user_id", profileUserId);
 
     const { searchParams } = new URL(req.url);
     for (const key of opts.searchableFilters ?? []) {
@@ -45,6 +47,8 @@ export function createCollectionHandlers<T extends z.ZodTypeAny>(opts: CrudOptio
   async function POST(req: NextRequest) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const profileUserId = await getProfileUserId(req);
+    if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
     const body = await req.json().catch(() => null);
@@ -55,7 +59,7 @@ export function createCollectionHandlers<T extends z.ZodTypeAny>(opts: CrudOptio
 
     const { data, error } = await supabase
       .from(opts.table)
-      .insert({ ...parsed.data, user_id: authUser.id })
+      .insert({ ...parsed.data, user_id: profileUserId })
       .select()
       .single();
 
@@ -70,13 +74,15 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
   async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const profileUserId = await getProfileUserId(req);
+    if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
     const { data, error } = await supabase
       .from(opts.table)
       .select("*")
       .eq("id", params.id)
-      .eq("user_id", authUser.id)
+      .eq("user_id", profileUserId)
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 404 });
@@ -86,6 +92,8 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
   async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const profileUserId = await getProfileUserId(req);
+    if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
     const body = await req.json().catch(() => null);
@@ -98,7 +106,7 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
       .from(opts.table)
       .update(parsed.data)
       .eq("id", params.id)
-      .eq("user_id", authUser.id)
+      .eq("user_id", profileUserId)
       .select()
       .single();
 
@@ -109,13 +117,15 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
   async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const profileUserId = await getProfileUserId(req);
+    if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
     const { error } = await supabase
       .from(opts.table)
       .delete()
       .eq("id", params.id)
-      .eq("user_id", authUser.id);
+      .eq("user_id", profileUserId);
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ success: true });
