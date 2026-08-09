@@ -1,8 +1,10 @@
+import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
+const Sidebar = dynamic(() => import("@/components/layout/sidebar").then((mod) => mod.Sidebar), { ssr: false });
+const Topbar = dynamic(() => import("@/components/layout/topbar").then((mod) => mod.Topbar), { ssr: false });
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();

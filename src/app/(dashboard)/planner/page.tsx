@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import dynamic from "next/dynamic";
+import { useMemo, useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { usePlannerStore } from "@/store/planner-store";
 import { useTasks, useUpdateTask } from "@/hooks/queries/use-tasks";
@@ -9,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Plus, CheckCircle2, Circle, CalendarClock } from "lucide-react";
-import { TaskDialog } from "@/components/planner/task-dialog";
 import type { Tables } from "@/types/database";
+
+const TaskDialog = dynamic(() => import("@/components/planner/task-dialog").then((mod) => mod.TaskDialog), { ssr: false });
 
 const PRIORITY_COLOR: Record<string, string> = {
   low: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -25,25 +27,35 @@ export default function PlannerPage() {
   const [editingTask, setEditingTask] = useState<Tables<"tasks"> | undefined>();
   const [newTaskDate, setNewTaskDate] = useState<string | undefined>();
 
-  const weekEnd = addDays(weekStart, 6);
+  const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
   const { data: tasks, isLoading } = useTasks({
     from: toDateInputValue(weekStart),
     to: toDateInputValue(weekEnd),
   });
   const updateTask = useUpdateTask();
 
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+  const tasksByDay = useMemo(() => {
+    const map = new Map<string, Tables<"tasks">[]>();
+    for (const task of tasks ?? []) {
+      const key = task.scheduled_date ?? "";
+      const current = map.get(key) ?? [];
+      current.push(task);
+      map.set(key, current);
+    }
+    return map;
+  }, [tasks]);
 
-  function openNewTask(date: Date) {
+  const openNewTask = (date: Date) => {
     setEditingTask(undefined);
     setNewTaskDate(toDateInputValue(date));
     setDialogOpen(true);
-  }
+  };
 
-  function openEditTask(task: Tables<"tasks">) {
+  const openEditTask = (task: Tables<"tasks">) => {
     setEditingTask(task);
     setDialogOpen(true);
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -64,7 +76,7 @@ export default function PlannerPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         {days.map((day) => {
           const dayStr = toDateInputValue(day);
-          const dayTasks = tasks?.filter((t) => t.scheduled_date === dayStr) ?? [];
+          const dayTasks = tasksByDay.get(dayStr) ?? [];
           const isToday = isSameDay(day, new Date());
 
           return (

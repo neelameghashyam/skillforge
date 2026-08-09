@@ -21,6 +21,16 @@ export function toDateInputValue(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
+export function nowIsoString() {
+  return new Date().toISOString();
+}
+
+export function getErrorMessage(error: unknown, fallback = "Something went wrong") {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return fallback;
+}
+
 export function initials(name: string | null | undefined) {
   if (!name) return "U";
   return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();

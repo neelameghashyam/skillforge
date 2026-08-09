@@ -1,8 +1,8 @@
 "use client";
 
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/utils";
 
 export function handleSupabaseError(error: unknown, fallback = "Something went wrong") {
-  const message = error instanceof Error ? error.message : fallback;
-  toast.error(message);
+  toast.error(getErrorMessage(error, fallback));
 }

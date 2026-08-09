@@ -15,6 +15,7 @@ export interface GamificationSummary {
 export function useGamification() {
   return useQuery({
     queryKey: ["gamification"],
-    queryFn: () => api.get<{ data: GamificationSummary }>("/api/gamification/summary").then((r) => r.data),
-  });
+    queryFn: () => api.get<{ data: GamificationSummary }>("/api/gamification/summary").then((r) => r.data),    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,  });
 }

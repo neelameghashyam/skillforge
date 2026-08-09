@@ -13,6 +13,9 @@ export function useTasks(params?: { from?: string; to?: string; status?: string 
   return useQuery({
     queryKey: ["tasks", params],
     queryFn: () => api.get<{ data: Tables<"tasks">[] }>(`/api/tasks?${search.toString()}`).then((r) => r.data),
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
   });
 }
 

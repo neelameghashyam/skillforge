@@ -8,6 +8,10 @@ export function useProjects(query?: string) {
   return useQuery({
     queryKey: ["projects", query],
     queryFn: () => api.get<{ data: Tables<"projects">[] }>(`/api/projects${query ? `?${query}` : ""}`).then((r) => r.data),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

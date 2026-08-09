@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { useTasks } from "@/hooks/queries/use-tasks";
 import { useProjects } from "@/hooks/queries/use-projects";
 import { useGamification } from "@/hooks/queries/use-gamification";
@@ -20,6 +21,8 @@ export default function DashboardPage() {
   const { data: gamification } = useGamification();
   const { data: skills } = useSkills();
   const updateTask = useUpdateTask();
+
+  const topSkills = useMemo(() => (skills ?? []).slice(0, 4), [skills]);
 
   const activeProjects = projects?.filter((p) => p.status === "active") ?? [];
   const upcomingDeadlines = activeProjects
@@ -100,7 +103,7 @@ export default function DashboardPage() {
           <Button variant="ghost" size="sm" asChild><Link href="/skills">Manage</Link></Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {skills?.slice(0, 4).map((skill) => (
+          {topSkills.map((skill) => (
             <div key={skill.id} className="space-y-1.5">
               <div className="flex justify-between text-sm">
                 <span className="font-medium">{skill.name}</span>

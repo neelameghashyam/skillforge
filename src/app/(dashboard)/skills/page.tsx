@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useDeferredValue, useMemo, useState } from "react";
 import { useCurricula, useMyTopicSkills, useAddSkillFromCurriculum, useDeleteSkill, useToggleTopicProgress } from "@/hooks/queries/use-skills";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -17,11 +17,12 @@ const MIN_SEARCH_CHARS = 3;
 export default function SkillsPage() {
   const [query, setQuery] = useState("");
   const searchedQuery = query.trim().length >= MIN_SEARCH_CHARS ? query.trim() : "";
-  const { data: curriculaData, isFetching } = useCurricula(searchedQuery);
+  const deferredQuery = useDeferredValue(searchedQuery);
+  const { data: curriculaData, isFetching } = useCurricula(deferredQuery);
   const { data: myTopicSkills } = useMyTopicSkills();
-  const curricula = Array.isArray(curriculaData) ? curriculaData : [];
-  const mySkills = Array.isArray(myTopicSkills) ? myTopicSkills : [];
-  const addedCurriculumIds = new Set(mySkills.map((s: any) => s.curriculum_id));
+  const curricula = useMemo(() => (Array.isArray(curriculaData) ? curriculaData : []), [curriculaData]);
+  const mySkills = useMemo(() => (Array.isArray(myTopicSkills) ? myTopicSkills : []), [myTopicSkills]);
+  const addedCurriculumIds = useMemo(() => new Set(mySkills.map((s: any) => s.curriculum_id)), [mySkills]);
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -60,7 +61,7 @@ export default function SkillsPage() {
 
           {query.trim().length > 0 && query.trim().length < MIN_SEARCH_CHARS ? (
             <p className="text-sm text-muted-foreground">Type at least {MIN_SEARCH_CHARS} characters to search.</p>
-          ) : isFetching ? (
+          ) : isFetching && deferredQuery ? (
             <p className="text-sm text-muted-foreground">Searching...</p>
           ) : searchedQuery && curricula.length === 0 ? (
             <p className="text-sm text-muted-foreground">No imported skills found for that search term.</p>
@@ -94,7 +95,7 @@ export default function SkillsPage() {
   );
 }
 
-function MySkillAccordion({ skill }: { skill: any }) {
+const MySkillAccordion = memo(function MySkillAccordion({ skill }: { skill: any }) {
   const [open, setOpen] = useState(false);
   const deleteSkill = useDeleteSkill();
 
@@ -155,9 +156,9 @@ function MySkillAccordion({ skill }: { skill: any }) {
       )}
     </Card>
   );
-}
+});
 
-function TopicRow({ skillId, topic }: { skillId: string; topic: any }) {
+const TopicRow = memo(function TopicRow({ skillId, topic }: { skillId: string; topic: any }) {
   const toggle = useToggleTopicProgress();
   const [expanded, setExpanded] = useState(false);
   const hasResources = Array.isArray(topic.resources) && topic.resources.length > 0;
@@ -198,9 +199,9 @@ function TopicRow({ skillId, topic }: { skillId: string; topic: any }) {
       </div>
     </div>
   );
-}
+});
 
-function AddFromCurriculumButton({ curriculumId, name, description, alreadyAdded }: { curriculumId: string; name: string; description: string | null; alreadyAdded: boolean }) {
+const AddFromCurriculumButton = memo(function AddFromCurriculumButton({ curriculumId, name, description, alreadyAdded }: { curriculumId: string; name: string; description: string | null; alreadyAdded: boolean }) {
   const addSkill = useAddSkillFromCurriculum();
   if (alreadyAdded) {
     return (
@@ -219,4 +220,4 @@ function AddFromCurriculumButton({ curriculumId, name, description, alreadyAdded
       <Plus className="h-3.5 w-3.5" /> Add to my skills
     </Button>
   );
-}
+});

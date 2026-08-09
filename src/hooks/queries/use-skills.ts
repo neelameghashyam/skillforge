@@ -8,6 +8,10 @@ export function useSkills(query?: string) {
   return useQuery({
     queryKey: ["skills", query],
     queryFn: () => api.get<{ data: Tables<"skills">[] }>(`/api/skills${query ? `?${query}` : ""}`).then((r) => r.data),
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
@@ -28,6 +32,10 @@ export function useCurricula(search?: string) {
     queryKey: ["skillCurricula", search],
     queryFn: () => api.get<{ data: any[] }>(`/api/skills/curricula${search ? `?q=${encodeURIComponent(search)}` : ""}`).then((r) => r.data),
     enabled: !!search,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
@@ -77,7 +85,11 @@ export function useAddSkillFromCurriculum() {
 export function useMyTopicSkills() {
   return useQuery({
     queryKey: ["myTopicSkills"],
-    queryFn: () => api.get<{ data: any[] }>("/api/skills/my-topics").then((r) => r.data),
+    queryFn: () => api.get<{ data: any[] }>('/api/skills/my-topics').then((r) => r.data),
+    staleTime: 2 * 60_000,
+    gcTime: 15 * 60_000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

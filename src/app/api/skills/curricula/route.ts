@@ -1,36 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/supabase/get-auth-user";
-
-function mapResourcesByTopic(resources: any[]) {
-  return resources.reduce<Record<string, any[]>>((acc, resource) => {
-    if (!acc[resource.topic_id]) acc[resource.topic_id] = [];
-    acc[resource.topic_id].push(resource);
-    return acc;
-  }, {});
-}
-
-function mapTopicsByCategory(topics: any[], resourcesByTopic: Record<string, any[]>) {
-  return topics.reduce<Record<string, any[]>>((acc, topic) => {
-    if (!acc[topic.category_id]) acc[topic.category_id] = [];
-    acc[topic.category_id].push({
-      ...topic,
-      resources: resourcesByTopic[topic.id] ?? [],
-    });
-    return acc;
-  }, {});
-}
-
-function mapCategoriesByCurriculum(categories: any[], topicsByCategory: Record<string, any[]>) {
-  return categories.reduce<Record<string, any[]>>((acc, category) => {
-    if (!acc[category.curriculum_id]) acc[category.curriculum_id] = [];
-    acc[category.curriculum_id].push({
-      ...category,
-      topics: topicsByCategory[category.id] ?? [],
-    });
-    return acc;
-  }, {});
-}
+import { buildCurriculumPayload } from "@/lib/skills/curricula";
 
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
@@ -83,9 +54,7 @@ export async function GET(req: NextRequest) {
     if (resourcesResult.error) return NextResponse.json({ error: resourcesResult.error.message }, { status: 400 });
     const resources = resourcesResult.data ?? [];
 
-    const resourcesByTopic = mapResourcesByTopic(resources);
-    const topicsByCategory = mapTopicsByCategory(topics, resourcesByTopic);
-    const categoriesByCurriculum = mapCategoriesByCurriculum(categories ?? [], topicsByCategory);
+    const categoriesByCurriculum = buildCurriculumPayload({ curriculumId: curriculum.id, categories: categories ?? [], topics, resources });
 
     return NextResponse.json({ data: { ...curriculum, categories: categoriesByCurriculum[curriculum.id] ?? [] } });
   }
@@ -133,9 +102,7 @@ export async function GET(req: NextRequest) {
   if (resourcesResult.error) return NextResponse.json({ error: resourcesResult.error.message }, { status: 400 });
   const resources = resourcesResult.data ?? [];
 
-  const resourcesByTopic = mapResourcesByTopic(resources);
-  const topicsByCategory = mapTopicsByCategory(topics, resourcesByTopic);
-  const categoriesByCurriculum = mapCategoriesByCurriculum(categories ?? [], topicsByCategory);
+  const categoriesByCurriculum = buildCurriculumPayload({ curriculumId: "", categories: categories ?? [], topics, resources });
 
   const output = result.map((curriculum: any) => ({
     ...curriculum,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/supabase/get-auth-user";
+import { nowIsoString } from "@/lib/utils";
 import { z } from "zod";
 
 const bodySchema = z.object({
@@ -39,26 +40,22 @@ export async function POST(req: NextRequest) {
         user_id: authUser.id,
         curriculum_topic_id,
         is_complete,
-        completed_at: is_complete ? new Date().toISOString() : null,
+        completed_at: is_complete ? nowIsoString() : null,
       },
       { onConflict: "skill_id,curriculum_topic_id" }
     );
 
   if (upsertError) return NextResponse.json({ error: upsertError.message }, { status: 400 });
 
-  const { count: totalTopics } = await supabase
+  const { data: progressRows, error: progressRowsError } = await supabase
     .from("skill_topic_progress")
-    .select("*", { count: "exact", head: true })
+    .select("is_complete")
     .eq("skill_id", skill_id);
 
-  const { count: completedTopics } = await supabase
-    .from("skill_topic_progress")
-    .select("*", { count: "exact", head: true })
-    .eq("skill_id", skill_id)
-    .eq("is_complete", true);
+  if (progressRowsError) return NextResponse.json({ error: progressRowsError.message }, { status: 400 });
 
-  const total = totalTopics ?? 0;
-  const completed = completedTopics ?? 0;
+  const total = progressRows?.length ?? 0;
+  const completed = progressRows?.filter((entry) => entry.is_complete).length ?? 0;
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const { error: updateError } = await supabase

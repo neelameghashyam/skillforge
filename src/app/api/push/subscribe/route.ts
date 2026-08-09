@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/supabase/get-auth-user";
+import { nowIsoString } from "@/lib/utils";
 import { z } from "zod";
 
 const subscribeSchema = z.object({
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
       p256dh: parsed.data.keys.p256dh,
       auth: parsed.data.keys.auth,
       user_agent: req.headers.get("user-agent") ?? undefined,
-      last_used_at: new Date().toISOString(),
+      last_used_at: nowIsoString(),
     },
     { onConflict: "endpoint" }
   );
