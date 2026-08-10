@@ -1,31 +1,36 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAnalytics } from "@/hooks/queries/use-analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
-
-const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => mod.ResponsiveContainer), { ssr: false });
-const AreaChart = dynamic(() => import("recharts").then((mod) => mod.AreaChart), { ssr: false });
-const Area = dynamic(() => import("recharts").then((mod) => mod.Area), { ssr: false });
-const XAxis = dynamic(() => import("recharts").then((mod) => mod.XAxis), { ssr: false });
-const YAxis = dynamic(() => import("recharts").then((mod) => mod.YAxis), { ssr: false });
-const CartesianGrid = dynamic(() => import("recharts").then((mod) => mod.CartesianGrid), { ssr: false });
-const Tooltip = dynamic(() => import("recharts").then((mod) => mod.Tooltip), { ssr: false });
-const BarChart = dynamic(() => import("recharts").then((mod) => mod.BarChart), { ssr: false });
-const Bar = dynamic(() => import("recharts").then((mod) => mod.Bar), { ssr: false });
-const PieChart = dynamic(() => import("recharts").then((mod) => mod.PieChart), { ssr: false });
-const Pie = dynamic(() => import("recharts").then((mod) => mod.Pie), { ssr: false });
-const Cell = dynamic(() => import("recharts").then((mod) => mod.Cell), { ssr: false });
-const Legend = dynamic(() => import("recharts").then((mod) => mod.Legend), { ssr: false });
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 
 const COLORS = ["#6366f1", "#f59e0b", "#10b981", "#ef4444", "#3b82f6", "#a855f7", "#ec4899", "#06b6d4"];
 
 export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
+  const [mounted, setMounted] = useState(false);
   const { data, isLoading } = useAnalytics(days);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const activityData = data?.dailyActivity.map((d) => ({
     day: format(new Date(d.day), "MMM d"),
@@ -58,7 +63,7 @@ export default function AnalyticsPage() {
 
       {isLoading && <p className="text-muted-foreground">Loading analytics...</p>}
 
-      {data && (
+      {mounted && data && (
         <>
           <div className="grid grid-cols-2 gap-4">
             <MetricCard label="Task logs" value={data.dailyActivity.reduce((sum, d) => sum + d.tasks_done, 0)} />
@@ -69,7 +74,7 @@ export default function AnalyticsPage() {
             <CardHeader><CardTitle>Activity over time</CardTitle></CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={activityData}>
+                <AreaChart data={activityData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="day" fontSize={12} tickLine={false} />
                   <YAxis fontSize={12} tickLine={false} allowDecimals={false} />
@@ -87,7 +92,7 @@ export default function AnalyticsPage() {
               <CardHeader><CardTitle>Task status breakdown</CardTitle></CardHeader>
               <CardContent className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Pie data={statusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
                       {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
@@ -102,7 +107,7 @@ export default function AnalyticsPage() {
               <CardHeader><CardTitle>Hours logged per skill</CardTitle></CardHeader>
               <CardContent className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={skillHoursData} layout="vertical" margin={{ left: 20 }}>
+                  <BarChart data={skillHoursData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis type="number" fontSize={12} />
                     <YAxis type="category" dataKey="name" fontSize={12} width={100} />
