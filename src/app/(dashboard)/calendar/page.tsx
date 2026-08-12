@@ -1,17 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
-import { dateFnsLocalizer, type View, type SlotInfo } from "react-big-calendar";
+import { Calendar, dateFnsLocalizer, type View, type SlotInfo } from "react-big-calendar";
 import { format, parse, startOfWeek as dfStartOfWeek, getDay } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { enUS } from "date-fns/locale/en-US";
 import { useEvents } from "@/hooks/queries/use-events";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { Tables } from "@/types/database";
-
-const Calendar = dynamic(() => import("react-big-calendar").then((mod) => mod.Calendar), { ssr: false });
-const EventDialog = dynamic(() => import("@/components/calendar/event-dialog").then((mod) => mod.EventDialog), { ssr: false });
+import { EventDialog } from "@/components/calendar/event-dialog";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
@@ -74,11 +71,11 @@ export default function CalendarPage() {
 
       <div className="rounded-xl border bg-card p-4" style={{ height: 720 }}>
         {!isLoading && (
-          <Calendar
+          <Calendar<CalEvent>
             localizer={localizer}
             events={calendarEvents}
-            startAccessor="start"
-            endAccessor="end"
+            startAccessor={(event: CalEvent) => event.start}
+            endAccessor={(event: CalEvent) => event.end}
             view={view}
             onView={setView}
             date={date}

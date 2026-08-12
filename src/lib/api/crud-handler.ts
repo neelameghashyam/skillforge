@@ -18,7 +18,7 @@ export function createCollectionHandlers<T extends z.ZodTypeAny>(opts: CrudOptio
   async function GET(req: NextRequest) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const profileUserId = await getProfileUserId(req);
+    const profileUserId = await getProfileUserId(req, authUser);
     if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
@@ -47,7 +47,7 @@ export function createCollectionHandlers<T extends z.ZodTypeAny>(opts: CrudOptio
   async function POST(req: NextRequest) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const profileUserId = await getProfileUserId(req);
+    const profileUserId = await getProfileUserId(req, authUser);
     if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
@@ -74,7 +74,7 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
   async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const profileUserId = await getProfileUserId(req);
+    const profileUserId = await getProfileUserId(req, authUser);
     if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
@@ -92,7 +92,7 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
   async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const profileUserId = await getProfileUserId(req);
+    const profileUserId = await getProfileUserId(req, authUser);
     if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 
@@ -117,7 +117,7 @@ export function createItemHandlers(opts: { table: TableName; updateSchema: z.Zod
   async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const authUser = await getAuthUser(req);
     if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const profileUserId = await getProfileUserId(req);
+    const profileUserId = await getProfileUserId(req, authUser);
     if (!profileUserId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const supabase = createClient();
 

@@ -59,6 +59,7 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     forwardedHeaders.set(AUTH_USER_ID_HEADER, user.id);
     if (user.email) forwardedHeaders.set(AUTH_USER_EMAIL_HEADER, user.email);
+    response = NextResponse.next({ request: { headers: forwardedHeaders } });
     response.headers.set(AUTH_USER_ID_HEADER, user.id);
     if (user.email) response.headers.set(AUTH_USER_EMAIL_HEADER, user.email);
   }

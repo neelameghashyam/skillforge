@@ -25,36 +25,8 @@ export async function getAuthUser(req: NextRequest): Promise<AuthUser | null> {
   return { id: data.user.id, email: data.user.email ?? null };
 }
 
-export async function getProfileUserId(req: NextRequest): Promise<string | null> {
-  const authUser = await getAuthUser(req);
+export async function getProfileUserId(req: NextRequest, existingUser?: AuthUser | null): Promise<string | null> {
+  const authUser = existingUser !== undefined ? existingUser : await getAuthUser(req);
   if (!authUser) return null;
-
-  const supabase = createClient();
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", authUser.id)
-    .maybeSingle();
-
-  if (profile?.id) return profile.id;
-
-  if (profileError) {
-    console.error("Failed to resolve profile for user", profileError.message);
-  }
-
-  const { data: createdProfile, error: createError } = await supabase
-    .from("profiles")
-    .insert({
-      id: authUser.id,
-      full_name: authUser.email?.split("@")[0] ?? null,
-    })
-    .select("id")
-    .single();
-
-  if (createError) {
-    console.error("Failed to create profile for user", createError.message);
-    return authUser.id;
-  }
-
-  return createdProfile?.id ?? authUser.id;
+  return authUser.id;
 }
