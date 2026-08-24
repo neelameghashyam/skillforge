@@ -4,7 +4,7 @@
   "buildCommand": "next build",
   "installCommand": "npm ci",
   "crons": [
-    { "path": "/api/cron/daily-notifications", "schedule": "0 * * * *" },
+    { "path": "/api/cron/daily-notifications", "schedule": "0 8 * * *" },
     { "path": "/api/cron/spaced-repetition", "schedule": "0 7 * * *" }
   ]
 }
