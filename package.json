@@ -2,7 +2,7 @@
   "name": "skillforge",
   "version": "1.0.0",
   "private": true,
-  "description": "SkillForge — Personal Learning & Productivity OS",
+  "description": "SkillForge \u2014 Personal Learning & Productivity OS",
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",
@@ -56,13 +56,19 @@
     "remark-gfm": "4.0.0",
     "sonner": "1.5.0",
     "tailwind-merge": "2.5.2",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.4.41",
+    "tailwindcss": "3.4.9",
     "tailwindcss-animate": "1.0.7",
     "typescript": "5.5.4",
     "uuid": "10.0.0",
     "web-push": "3.6.7",
     "xlsx": "^0.18.5",
     "zod": "3.23.8",
-    "zustand": "4.5.4"
+    "zustand": "4.5.4",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.4.41",
+    "tailwindcss": "3.4.9"
   },
   "devDependencies": {
     "@playwright/test": "1.46.0",
