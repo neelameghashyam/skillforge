@@ -1,4 +1,4 @@
-import { connect } from "https://deno.land/x/smtp@0.4.0/mod.ts";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 export async function sendEmail(opts: {
   to: string;
@@ -16,21 +16,28 @@ export async function sendEmail(opts: {
     return { ok: false, error: "SMTP settings are not configured" };
   }
 
-  const client = await connect({ hostname: host, port, username, password, secure });
+  
+    const client = new SMTPClient({
+    connection: {
+      hostname: host,
+      port,
+      tls: secure,
+      auth: { username, password },
+    },
+  });
 
   try {
     await client.send({
       from,
       to: opts.to,
       subject: opts.subject,
-      content: opts.html,
-      contentType: "text/html",
+      html: opts.html,
     });
     return { ok: true };
   } catch (error) {
     return { ok: false, error: String(error) };
   } finally {
-    client.close();
+    await client.close();
   }
 }
 
